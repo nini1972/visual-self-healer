@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AuraHeal AI - Multimodal Autonomous UI Designer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;600;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/frontend/style.css">
+</head>
+<body>
+    <div class="glow-bg"></div>
+    <div class="app-container">
+        <!-- Sidebar Controls & Logs -->
+        <aside class="sidebar">
+            <header class="app-header">
+                <div class="logo">
+                    <span class="logo-icon">✨</span>
+                    <h1>AuraHeal <span class="accent">AI</span></h1>
+                </div>
+                <p class="tagline">Multimodal Self-Healing UI Agent</p>
+            </header>
+
+            <section class="control-panel card">
+                <div class="input-group">
+                    <label for="prompt-input">Visual UI Prompt</label>
+                    <textarea id="prompt-input" placeholder="e.g., A neumorphic music synthesizer dashboard with glow animations and reactive audio visualizer..." rows="4"></textarea>
+                </div>
+
+                <div class="input-group">
+                    <label for="api-key-input">Gemini API Key <small>(Optional if set in server env)</small></label>
+                    <input type="password" id="api-key-input" placeholder="Enter GEMINI_API_KEY...">
+                </div>
+
+                <div class="row">
+                    <div class="input-group flex-1">
+                        <label for="iterations-input">Max Iterations</label>
+                        <select id="iterations-input">
+                            <option value="1">1 Iteration</option>
+                            <option value="2">2 Iterations</option>
+                            <option value="3">3 Iterations</option>
+                            <option value="4" selected>4 Iterations</option>
+                            <option value="5">5 Iterations</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button id="start-btn" class="btn btn-primary">
+                    <span class="btn-text">Generate & Heal</span>
+                    <span class="spinner"></span>
+                </button>
+            </section>
+
+            <section class="terminal-card card flex-1">
+                <div class="card-header">
+                    <h3>Execution Logs</h3>
+                    <span class="status-badge idle" id="status-badge">Idle</span>
+                </div>
+                <div class="terminal" id="terminal-logs">
+                    <div class="terminal-line system">Ready to initialize visual self-healer agent.</div>
+                </div>
+            </section>
+        </aside>
+
+        <!-- Main Workspace (Tabs & Output) -->
+        <main class="main-content">
+            <div class="tab-header card">
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="preview-tab">Visual Live Preview</button>
+                    <button class="tab-btn" data-tab="code-tab">Source Code</button>
+                    <button class="tab-btn" data-tab="critique-tab">Librarian Critique</button>
+                </div>
+                <div class="active-status" id="loop-step-display">Iteration: 0</div>
+            </div>
+
+            <!-- Tab Panels -->
+            <div class="tab-body flex-1">
+                <!-- Preview Tab -->
+                <div class="tab-panel active" id="preview-tab">
+                    <div class="preview-container card">
+                        <iframe id="preview-iframe" src="about:blank" title="Sandbox Preview"></iframe>
+                    </div>
+                </div>
+
+                <!-- Code Tab -->
+                <div class="tab-panel" id="code-tab">
+                    <div class="code-container card">
+                        <textarea id="code-viewer" readonly placeholder="<!-- Generated HTML will appear here -->"></textarea>
+                    </div>
+                </div>
+
+                <!-- Critique Tab -->
+                <div class="tab-panel" id="critique-tab">
+                    <div class="critique-container card" id="critique-viewer">
+                        <div class="empty-state">
+                            <span class="empty-icon">📝</span>
+                            <p>No critique has been generated yet. Run the self-healer to receive visual feedback logs.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Evolution Timeline -->
+            <section class="evolution-timeline card">
+                <div class="timeline-header">
+                    <h3>Visual Evolution History</h3>
+                    <p class="subtitle">Click thumbnails to inspect how the visual interface evolved across iterations</p>
+                </div>
+                <div class="timeline-track" id="timeline-track">
+                    <div class="empty-timeline">No history recorded yet.</div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Details Modal for Inspecting Past Iterations -->
+    <div class="modal" id="iteration-modal">
+        <div class="modal-content card">
+            <div class="modal-header">
+                <h2 id="modal-title">Iteration Details</h2>
+                <button class="close-btn" id="close-modal-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-grid">
+                    <div class="modal-visual">
+                        <h4>Visual Render</h4>
+                        <img id="modal-img" src="" alt="Iteration Screenshot">
+                    </div>
+                    <div class="modal-info">
+                        <h4>Gemini Visual Critique</h4>
+                        <div class="feedback-box" id="modal-feedback"></div>
+                        <h4 class="mt-4">Execution Logs & Errors</h4>
+                        <pre class="logs-box" id="modal-logs"></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/frontend/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+fastapi
+uvicorn[standard]
+playwright
+google-genai
+python-dotenv
+websockets
+beautifulsoup4
