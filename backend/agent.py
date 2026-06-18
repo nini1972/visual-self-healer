@@ -16,7 +16,7 @@ class ReplacementChunk(BaseModel):
         description="The CSS selector of the tag/element to replace (e.g., 'style', 'script', or specific element IDs like '#dashboard', '#buttons-panel')."
     )
     replacement_content: str = Field(
-        description="The complete new HTML/CSS/JS inner content for the specified selector. For 'style' and 'script' tags, provide the raw CSS/JS code directly. For HTML elements, provide the HTML structure."
+        description="The complete new HTML/CSS/JS inner content for the specified selector. For 'style' and 'script' tags, provide the raw CSS/JS code directly. For HTML elements, provide the HTML markup for the inner content."
     )
 
 class CritiqueResponse(BaseModel):
@@ -70,7 +70,11 @@ class VisualSelfHealerAgent:
             "1. Design Aesthetics: Use vibrant color palettes, dark modes, Outfit/Inter typography, and drop shadows.\n"
             "2. Interactive Design: Include hover effects, active button transitions, and keyframe animations.\n"
             "3. Tailwind CSS classes are supported and preloaded in the template, so feel free to use standard Tailwind classes in your HTML body.\n"
-            "4. Zero placeholders: Do not use placeholders. All copy and functional features must be written out."
+            "4. Zero placeholders: Do not use placeholders. All copy and functional features must be written out.\n"
+            "5. Defensive JavaScript: Always guard every DOM query with a null check before accessing any property or method. "
+            "For example: const el = document.querySelector('#my-id'); if (el) { el.classList.add('active'); } "
+            "Never call .classList, .style, .innerHTML, .addEventListener, or any other property directly on the result of querySelector/getElementById without first verifying it is not null. "
+            "This applies to all tab switching functions, modal handlers, and DOMContentLoaded initializers."
         )
 
         user_content = f"Create a fully interactive, visually stunning, and highly premium web application for: '{prompt}'."
@@ -296,8 +300,9 @@ class VisualSelfHealerAgent:
             "1. Inspect the screenshot of the rendered web page. Assess the aesthetic quality: alignment, typography, colors, layout gaps, mobile responsiveness, and overall 'wow' factor.\n"
             "2. Read the browser logs. If there are exceptions, JS crashes, or Tailwind CDN warnings, they must be resolved.\n"
             "3. If the page matches the prompt, is visual perfection, is fully functional, and has zero console errors, set 'is_perfect' to true and leave 'replacements' empty.\n"
-            "4. If there are any flaws, design deficiencies, alignment issues, or console errors, write a detailed visual critique in 'feedback' and return a list of specific DOM replacements in 'replacements' to fix the issues. You can replace the entire CSS block with selector 'style', the entire JS logic with selector 'script', or specific HTML containers (e.g. '#dashboard-grid', '#music-player'). Provide only the inner content for these tags/elements. Do not wrap custom styles in <style> tags or scripts in <script> tags when replacing them—provide raw CSS/JS string.\n"
-            "5. You must format your output as a single JSON object matching this structure exactly (do not output any text other than this JSON):\n"
+            "4. If there are any flaws, design deficiencies, alignment issues, or console errors, write a detailed visual critique in 'feedback' and return a list of specific DOM replacements in 'replacements'. Each replacement must target a specific CSS selector and provide its complete new inner content.\n"
+            "5. CRITICAL: In any replacement_content that includes JavaScript, always guard every DOM query with a null check before accessing properties. Example: const el = document.querySelector('#id'); if (el) { el.classList.add('active'); }\n"
+            "6. You must format your output as a single JSON object matching this structure exactly (do not output any text other than this JSON):\n"
             "{\n"
             "  \"is_perfect\": false,\n"
             "  \"feedback\": \"Your detailed critique of the visual design...\",\n"
