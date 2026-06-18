@@ -82,9 +82,13 @@ class VisualSelfHealerAgent:
                 config=types.GenerateContentConfig(
                     system_instruction=system_prompt,
                     temperature=0.7,
-                    max_output_tokens=8192,
+                    max_output_tokens=65536,
                 )
             )
+            if response.candidates:
+                finish_reason = response.candidates[0].finish_reason
+                if "MAX_TOKENS" in str(finish_reason).upper():
+                    await send_log_fn("WARNING", "Model output was cut at max token limit (MAX_TOKENS).")
             
             text = response.text
             
@@ -234,7 +238,10 @@ class VisualSelfHealerAgent:
         soup = BeautifulSoup(code, "html.parser")
         for rep in replacements:
             selector = rep.selector.strip()
-            content = rep.replacement_content
+            content = rep.replacement_content or ""
+            if not content.strip():
+                logger.warning(f"Empty replacement content for selector '{selector}'. Skipping replacement.")
+                continue
             
             # Find element
             element = soup.select_one(selector)
@@ -248,6 +255,19 @@ class VisualSelfHealerAgent:
             else:
                 logger.warning(f"Selector '{selector}' not found in HTML. Skipping replacement.")
         return str(soup)
+
+    def _is_valid_html(self, code: str) -> bool:
+        if not code or len(code.strip()) < 200:
+            return False
+        if "<body" not in code.lower():
+            return False
+        soup = BeautifulSoup(code, "html.parser")
+        body = soup.find("body")
+        if body is None:
+            return False
+        if len(body.decode_contents().strip()) < 100:
+            return False
+        return True
 
     async def run_healer_step(self, prompt: str, code: str, screenshot_b64: str, logs: list[str], iteration: int, send_log_fn) -> tuple[bool, str, str]:
         """
@@ -302,9 +322,13 @@ class VisualSelfHealerAgent:
                 config=types.GenerateContentConfig(
                     response_mime_type="application/json",
                     temperature=0.2, # Low temperature for precise code edits and corrections
-                    max_output_tokens=8192,
+                    max_output_tokens=32768,
                 )
             )
+            if response.candidates:
+                finish_reason = response.candidates[0].finish_reason
+                if "MAX_TOKENS" in str(finish_reason).upper():
+                    await send_log_fn("WARNING", "Model output was cut at max token limit (MAX_TOKENS).")
             
             try:
                 result_json = json.loads(response.text)
@@ -330,6 +354,9 @@ class VisualSelfHealerAgent:
             healed_code = code
             if not is_perfect and replacements:
                 healed_code = self.apply_replacements(code, replacements)
+                if not self._is_valid_html(healed_code):
+                    await send_log_fn("WARNING", "WARNING: Healed code failed validation (possible truncation). Preserving last known-good code.")
+                    return False, feedback + " [Healing skipped: output was invalid/truncated]", code
                 with open(self.code_path, "w", encoding="utf-8") as f:
                     f.write(healed_code)
                 await send_log_fn("INFO", f"Code changes applied for iteration {iteration} ({len(replacements)} components healed).")
