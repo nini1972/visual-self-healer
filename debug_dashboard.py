@@ -1,6 +1,11 @@
 import asyncio
 from playwright.async_api import async_playwright
 
+if os.name == "nt":
+    policy_cls = getattr(asyncio, "WindowsProactorEventLoopPolicy", None)
+    if policy_cls is not None:
+        asyncio.set_event_loop_policy(policy_cls())
+
 async def main():
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)

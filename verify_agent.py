@@ -3,6 +3,11 @@ import sys
 import asyncio
 import logging
 
+if os.name == "nt":
+    policy_cls = getattr(asyncio, "WindowsProactorEventLoopPolicy", None)
+    if policy_cls is not None:
+        asyncio.set_event_loop_policy(policy_cls())
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("verify")
 

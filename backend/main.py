@@ -1,15 +1,28 @@
+import sys
+import asyncio
+
+# Force Windows to use the ProactorEventLoop so Playwright can spawn Chromium
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
+
 import os
 import json
 import logging
+import warnings
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from dotenv import load_dotenv
-
+from agent import VisualSelfHealerAgent
 # Load env variables (for local GEMINI_API_KEY)
 load_dotenv()
 
-from agent import VisualSelfHealerAgent
+if os.name == "nt":
+    policy_cls = getattr(asyncio, "WindowsProactorEventLoopPolicy", None)
+    if policy_cls is not None:
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            asyncio.set_event_loop_policy(policy_cls())
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("auraheal")
