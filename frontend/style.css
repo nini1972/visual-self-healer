@@ -37,6 +37,8 @@ body {
     height: 100vh;
     width: 100vw;
     position: relative;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Ambient glow background */
@@ -57,10 +59,11 @@ body {
 /* App Layout */
 .app-container {
     display: flex;
-    height: 100vh;
+    flex: 1;
     width: 100vw;
     padding: 1rem;
     gap: 1rem;
+    min-height: 0;
 }
 
 /* Sidebar Styling */
@@ -355,14 +358,19 @@ textarea:focus, input[type="password"]:focus, select:focus {
 }
 
 .tab-panel.active {
-    display: block;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
 }
 
 /* Preview Tab container */
 .preview-container {
-    height: 100%;
+    flex: 1;
     padding: 0;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 #preview-iframe {
@@ -375,8 +383,10 @@ textarea:focus, input[type="password"]:focus, select:focus {
 
 /* Code Viewer Tab */
 .code-container {
-    height: 100%;
+    flex: 1;
     padding: 0;
+    display: flex;
+    flex-direction: column;
 }
 
 #code-viewer {
@@ -648,4 +658,50 @@ textarea:focus, input[type="password"]:focus, select:focus {
     overflow-y: auto;
     white-space: pre-wrap;
     word-break: break-all;
+}
+
+/* Unified Navigation styles */
+.app-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(13, 13, 25, 0.65);
+    border-bottom: 1px solid var(--border-color);
+    padding: 0.75rem 2rem;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 100;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.nav-brand {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.1rem;
+    background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.nav-links {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.nav-link {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: color 0.2s;
+}
+
+.nav-link:hover, .nav-link.active {
+    color: var(--text-primary);
+}
+
+.nav-link.active {
+    border-bottom: 2px solid var(--accent-purple);
+    padding-bottom: 0.2rem;
 }
