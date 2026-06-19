@@ -1,19 +1,13 @@
-import os
+import sys
 import asyncio
-import warnings
 
+# Force Windows to use the ProactorEventLoop so Playwright can spawn Chromium
+# This MUST be done before importing uvicorn, as uvicorn may create a loop
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
+
+import os
 import uvicorn
-
-if os.name == "nt":
-    policy_cls = getattr(asyncio, "WindowsProactorEventLoopPolicy", None)
-    if policy_cls is not None:
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", DeprecationWarning)
-            # Uvicorn's asyncio setup may force WindowsSelectorEventLoopPolicy.
-            # Remap it so Playwright subprocess APIs keep working on Python 3.14.
-            asyncio.WindowsSelectorEventLoopPolicy = policy_cls
-            asyncio.set_event_loop_policy(policy_cls())
-
 
 if __name__ == "__main__":
     base_dir = os.path.dirname(os.path.abspath(__file__))

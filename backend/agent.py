@@ -1,18 +1,13 @@
-import sys
-import asyncio
 import os
 import json
 import logging
 import base64
+import asyncio
 from google import genai
 from google.genai import types
 from pydantic import BaseModel, Field
 from playwright.async_api import async_playwright
 from bs4 import BeautifulSoup
-
-# Force Windows to use the ProactorEventLoop so Playwright can spawn Chromium
-if sys.platform == "win32":
-    asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
 
 logger = logging.getLogger("auraheal")
 

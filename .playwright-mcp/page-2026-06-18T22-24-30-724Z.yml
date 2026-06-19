@@ -1,0 +1,47 @@
+- generic [ref=e2]:
+  - complementary [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]: ✨
+        - heading "AuraHeal AI" [level=1] [ref=e7]
+      - paragraph [ref=e8]: Multimodal Self-Healing UI Agent
+    - generic [ref=e9]:
+      - generic [ref=e10]:
+        - generic [ref=e11]: Visual UI Prompt
+        - textbox "Visual UI Prompt" [ref=e12]:
+          - /placeholder: e.g., A neumorphic music synthesizer dashboard with glow animations and reactive audio visualizer...
+      - generic [ref=e13]:
+        - generic [ref=e14]: Gemini API Key (Optional if set in server env)
+        - textbox "Gemini API Key (Optional if set in server env)" [ref=e15]:
+          - /placeholder: Enter GEMINI_API_KEY...
+      - generic [ref=e17]:
+        - generic [ref=e18]: Max Iterations
+        - combobox "Max Iterations" [ref=e19]:
+          - option "1 Iteration"
+          - option "2 Iterations"
+          - option "3 Iterations"
+          - option "4 Iterations" [selected]
+          - option "5 Iterations"
+      - button "Generate & Heal" [ref=e20] [cursor=pointer]:
+        - generic [ref=e21]: Generate & Heal
+    - generic [ref=e22]:
+      - generic [ref=e23]:
+        - heading "Execution Logs" [level=3] [ref=e24]
+        - generic [ref=e25]: Idle
+      - generic [ref=e26]:
+        - generic [ref=e27]: Ready to initialize visual self-healer agent.
+        - generic [ref=e28]: "[00:24:29]WebSocket connection opened successfully."
+  - main [ref=e29]:
+    - generic [ref=e30]:
+      - generic [ref=e31]:
+        - button "Visual Live Preview" [ref=e32] [cursor=pointer]
+        - button "Source Code" [ref=e33] [cursor=pointer]
+        - button "Librarian Critique" [ref=e34] [cursor=pointer]
+      - generic [ref=e35]: "Iteration: 0"
+    - iframe [ref=e39]:
+      
+    - generic [ref=e40]:
+      - generic [ref=e41]:
+        - heading "Visual Evolution History" [level=3] [ref=e42]
+        - paragraph [ref=e43]: Click thumbnails to inspect how the visual interface evolved across iterations
+      - generic [ref=e45]: No history recorded yet.

@@ -1,7 +1,7 @@
-fastapi
-uvicorn[standard]
-playwright
-google-genai
-python-dotenv
-websockets
-beautifulsoup4
+fastapi>=0.115,<1.0
+uvicorn[standard]>=0.30,<1.0
+playwright>=1.44,<2.0
+google-genai>=0.21.0,<1.0
+python-dotenv>=1.0,<2.0
+websockets>=13,<16
+beautifulsoup4>=4.12,<5
