@@ -3,6 +3,7 @@ import json
 import logging
 import base64
 import asyncio
+import uuid
 from google import genai
 from google.genai import types
 from pydantic import BaseModel, Field
@@ -60,12 +61,65 @@ class VisualSelfHealerAgent:
         self.server_url = server_url
         self.code_path = os.path.join(self.sandbox_dir, "index.html")
         self.screenshots_dir = os.path.join(self.sandbox_dir, "screenshots")
+        self.run_id = uuid.uuid4().hex
+        self.run_screenshots_dir = os.path.join(self.screenshots_dir, self.run_id)
         
         os.makedirs(self.sandbox_dir, exist_ok=True)
         os.makedirs(self.screenshots_dir, exist_ok=True)
+        os.makedirs(self.run_screenshots_dir, exist_ok=True)
         
         # Initialize Google GenAI Client
         self.client = genai.Client(api_key=api_key)
+
+    def _is_transient_network_error(self, err: Exception) -> bool:
+        msg = str(err).lower()
+        transient_markers = (
+            "winerror 10053",
+            "connection was aborted",
+            "connection aborted",
+            "connection reset",
+            "timed out",
+            "timeout",
+            "deadline exceeded",
+            "temporarily unavailable",
+            "transport is closing",
+            "unavailable",
+        )
+        return any(marker in msg for marker in transient_markers)
+
+    async def _generate_content_with_retry(
+        self,
+        *,
+        model: str,
+        contents,
+        config: types.GenerateContentConfig,
+        send_log_fn,
+        stage: str,
+        max_attempts: int = 3,
+    ):
+        last_error = None
+        for attempt in range(1, max_attempts + 1):
+            try:
+                return self.client.models.generate_content(
+                    model=model,
+                    contents=contents,
+                    config=config,
+                )
+            except Exception as err:
+                last_error = err
+                should_retry = attempt < max_attempts and self._is_transient_network_error(err)
+                if not should_retry:
+                    raise err
+
+                delay_seconds = attempt * 2
+                await send_log_fn(
+                    "WARNING",
+                    f"{stage} temporary network interruption detected ({err}). Retrying in {delay_seconds}s...",
+                )
+                self.client = genai.Client(api_key=self.api_key)
+                await asyncio.sleep(delay_seconds)
+
+        raise last_error
 
     async def generate_initial_code(self, prompt: str, send_log_fn) -> str:
         await send_log_fn("INFO", f"Generating initial optimized code for: '{prompt}'...")
@@ -83,7 +137,7 @@ class VisualSelfHealerAgent:
 
         try:
             # Using Structured Outputs via response_schema
-            response = self.client.models.generate_content(
+            response = await self._generate_content_with_retry(
                 model='gemini-2.5-flash',
                 contents=user_content,
                 config=types.GenerateContentConfig(
@@ -91,7 +145,9 @@ class VisualSelfHealerAgent:
                     response_mime_type="application/json",
                     response_schema=InitialCodeResponse,
                     temperature=0.4, # Balanced creativity
-                )
+                ),
+                send_log_fn=send_log_fn,
+                stage="Initial generation",
             )
             
             parsed = json.loads(response.text or "{}")
@@ -139,7 +195,9 @@ class VisualSelfHealerAgent:
         
         sandbox_url = f"{self.server_url}/sandbox/index.html"
         # Store screenshots as lightweight JPEGs
-        screenshot_path = os.path.join(self.screenshots_dir, f"iteration_{iteration}.jpeg")
+        screenshot_path = os.path.join(self.run_screenshots_dir, f"iteration_{iteration}.jpeg")
+        if os.path.exists(screenshot_path):
+            os.remove(screenshot_path)
         
         console_messages = []
         page_errors = []
@@ -219,14 +277,16 @@ class VisualSelfHealerAgent:
         ]
         
         try:
-            response = self.client.models.generate_content(
+            response = await self._generate_content_with_retry(
                 model='gemini-2.5-flash',
                 contents=contents,
                 config=types.GenerateContentConfig(
                     response_mime_type="application/json",
                     response_schema=CritiqueResponse, # Guarantees reliable JSON object shape
                     temperature=0.1, # Enforces clinical editing precision
-                )
+                ),
+                send_log_fn=send_log_fn,
+                stage=f"Healer iteration {iteration}",
             )
             
             result_json = json.loads(response.text or "{}")
